@@ -26,11 +26,11 @@ let git_repo = null;
 // Initialize the local repository
 git().silent(true)
 	.clone(remote)
-	.then(() => {
-		git('./police-brutality').addRemote('upstream', 'https://github.com/2020PB/police-brutality.git');
-		git_repo = git('./police-brutality')
-			.addConfig('user.name', 'Samuel Goldman')
-			.addConfig('user.email', 'sgoldman216@gmail.com');
+	.then(async () => {
+		await git('./police-brutality').addRemote('upstream', 'https://github.com/2020PB/police-brutality.git');
+		git_repo = await git('./police-brutality');
+		await git_repo.addConfig('user.name', 'Samuel Goldman');
+		await git_repo.addConfig('user.email', 'sgoldman216@gmail.com');
 	})
 	.catch((err) => console.error('Failed clone: ', err));
 
