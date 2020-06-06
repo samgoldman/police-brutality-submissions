@@ -44,6 +44,7 @@ app.post('/submit', recaptcha.middleware.verify, async (req, res) => {
 		await git(`./patch-${branch_id}/police-brutality`).addRemote('upstream', 'https://github.com/2020PB/police-brutality.git');
 
 		const git_repo = await git(`./patch-${branch_id}/police-brutality`);
+		await git_repo.addConfig('user.name', '2020PB-bot');
 		await git_repo.addConfig('user.email', '2020PB-bot@samueltgoldman.com');
 
 		let link_contents = '';
