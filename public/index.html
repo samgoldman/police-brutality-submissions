@@ -3,90 +3,103 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Police Brutality Incident Submission Form</title>
+	<link crossorigin="anonymous" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" rel="stylesheet">
 
 </head>
 <body>
 
-<form method="post" action="/submit">
-	<label>
-		Brief Title:
-		<input type="text" name="title" placeholder="Title">
-	</label>
-	<label>
-		Date (in the format Jan 1st):
-		<input type="text" name="date" placeholder="Date (Jun 1st)">
-	</label>
-	<label>
-		State:
-		<select name="state">
-			<option value="Unknown Location">Unknown (leave city blank)</option>
-			<option value="Alabama">Alabama</option>
-			<option value="Alaska">Alaska</option>
-			<option value="Arizona">Arizona</option>
-			<option value="Arkansas">Arkansas</option>
-			<option value="California">California</option>
-			<option value="Colorado">Colorado</option>
-			<option value="Connecticut">Connecticut</option>
-			<option value="Delaware">Delaware</option>
-			<option value="Florida">Florida</option>
-			<option value="Georgia">Georgia</option>
-			<option value="Hawaii">Hawaii</option>
-			<option value="Idaho">Idaho</option>
-			<option value="Illinois">Illinois</option>
-			<option value="Indiana">Indiana</option>
-			<option value="Iowa">Iowa</option>
-			<option value="Kansas">Kansas</option>
-			<option value="Kentucky">Kentucky</option>
-			<option value="Louisiana">Louisiana</option>
-			<option value="Maine">Maine</option>
-			<option value="Maryland">Maryland</option>
-			<option value="Massachusetts">Massachusetts</option>
-			<option value="Michigan">Michigan</option>
-			<option value="Minnesota">Minnesota</option>
-			<option value="Mississippi">Mississippi</option>
-			<option value="Missouri">Missouri</option>
-			<option value="Montana">Montana</option>
-			<option value="Nebraska">Nebraska</option>
-			<option value="Nevada">Nevada</option>
-			<option value="New Hampshire">New Hampshire</option>
-			<option value="New Jersey">New Jersey</option>
-			<option value="New Mexico">New Mexico</option>
-			<option value="New York">New York</option>
-			<option value="North Carolina">North Carolina</option>
-			<option value="North Dakota">North Dakota</option>
-			<option value="Ohio">Ohio</option>
-			<option value="Oklahoma">Oklahoma</option>
-			<option value="Oregon">Oregon</option>
-			<option value="Pennsylvania">Pennsylvania</option>
-			<option value="Rhode Island">Rhode Island</option>
-			<option value="South Carolina">South Carolina</option>
-			<option value="South Dakota">South Dakota</option>
-			<option value="Tennessee">Tennessee</option>
-			<option value="Texas">Texas</option>
-			<option value="Utah">Utah</option>
-			<option value="Vermont">Vermont</option>
-			<option value="Virginia">Virginia</option>
-			<option value="Washington">Washington</option>
-			<option value="Washington DC">Washington DC</option>
-			<option value="West Virginia">West Virginia</option>
-			<option value="Wisconsin">Wisconsin</option>
-			<option value="Wyoming">Wyoming</option>
-		</select>
-	</label>
-	<label>
-		City (leave blank for Unknown or DC, or if state is known but city is not):
-		<input type="text" name="city" placeholder="City">
-	</label>
-	<label>
-		Description of the Incident:
-		<input type="text" name="description" placeholder="Description">
-	</label>
-	<label>
-		Links (one per line):
-		<textarea name="links" placeholder="Links"></textarea>
-	</label>
-	<button type="submit">Submit</button>
-</form>
+<div class="container-fluid">
+	<div class="col-md-6 offset-md-3 col-sm-12">
+		<div class="text-center">
+			<h1>Submit an Incident to <a href="https://github.com/2020PB/police-brutality">2020BR/police-brutality</a>:</h1>
+		</div>
+		<form action="/submit" method="post">
+			<div class="form-group">
+				<label>Brief Title:</label>
+				<input class="form-control" name="title" placeholder="Title" type="text">
+			</div>
+			<div class="form-group">
+				<label>
+					Date (in the format Jan 1st):
+				</label>
+				<input class="form-control" name="date" placeholder="Date (Jun 1st)" type="text">
+			</div>
+			<div class="form-group">
+				<label>State:</label>
+				<select class="form-control" name="state">
+					<option value="Unknown Location">Unknown (leave city blank)</option>
+					<option value="Alabama">Alabama</option>
+					<option value="Alaska">Alaska</option>
+					<option value="Arizona">Arizona</option>
+					<option value="Arkansas">Arkansas</option>
+					<option value="California">California</option>
+					<option value="Colorado">Colorado</option>
+					<option value="Connecticut">Connecticut</option>
+					<option value="Delaware">Delaware</option>
+					<option value="Florida">Florida</option>
+					<option value="Georgia">Georgia</option>
+					<option value="Hawaii">Hawaii</option>
+					<option value="Idaho">Idaho</option>
+					<option value="Illinois">Illinois</option>
+					<option value="Indiana">Indiana</option>
+					<option value="Iowa">Iowa</option>
+					<option value="Kansas">Kansas</option>
+					<option value="Kentucky">Kentucky</option>
+					<option value="Louisiana">Louisiana</option>
+					<option value="Maine">Maine</option>
+					<option value="Maryland">Maryland</option>
+					<option value="Massachusetts">Massachusetts</option>
+					<option value="Michigan">Michigan</option>
+					<option value="Minnesota">Minnesota</option>
+					<option value="Mississippi">Mississippi</option>
+					<option value="Missouri">Missouri</option>
+					<option value="Montana">Montana</option>
+					<option value="Nebraska">Nebraska</option>
+					<option value="Nevada">Nevada</option>
+					<option value="New Hampshire">New Hampshire</option>
+					<option value="New Jersey">New Jersey</option>
+					<option value="New Mexico">New Mexico</option>
+					<option value="New York">New York</option>
+					<option value="North Carolina">North Carolina</option>
+					<option value="North Dakota">North Dakota</option>
+					<option value="Ohio">Ohio</option>
+					<option value="Oklahoma">Oklahoma</option>
+					<option value="Oregon">Oregon</option>
+					<option value="Pennsylvania">Pennsylvania</option>
+					<option value="Rhode Island">Rhode Island</option>
+					<option value="South Carolina">South Carolina</option>
+					<option value="South Dakota">South Dakota</option>
+					<option value="Tennessee">Tennessee</option>
+					<option value="Texas">Texas</option>
+					<option value="Utah">Utah</option>
+					<option value="Vermont">Vermont</option>
+					<option value="Virginia">Virginia</option>
+					<option value="Washington">Washington</option>
+					<option value="Washington DC">Washington DC</option>
+					<option value="West Virginia">West Virginia</option>
+					<option value="Wisconsin">Wisconsin</option>
+					<option value="Wyoming">Wyoming</option>
+				</select>
+			</div>
+			<div class="form-group">
+				<label>City (leave blank for Unknown or DC, or if state is known but city is not):</label>
+				<input class="form-control" name="city" placeholder="City" type="text">
+			</div>
+			<div class="form-group">
+				<label>Description of the Incident:</label>
+				<input class="form-control" name="description" placeholder="Description" type="text">
+			</div>
+			<div class="form-group">
+				<label>Links (one per line):</label>
+				<textarea class="form-control" name="links" placeholder="Links"></textarea>
+			</div>
+			<div class="form-group">
+				<button class="btn btn-primary btn-block" type="submit">Submit</button>
+			</div>
+		</form>
+
+	</div>
+</div>
 
 </body>
 </html>
