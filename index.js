@@ -25,6 +25,85 @@ const remote = `https://${USER}:${PASS}@${REPO}`;
 app.use(express.static('public'))
 app.use(bodyParser.urlencoded({ extended: false }));
 
+const get_state_code = state_name => {
+	if (state_name === 'Washington DC') return 'dc';
+	else if (state_name === 'Unknown Location') return 'tbd';
+	else return {
+		'Arizona': 'AZ',
+		'Alabama': 'AL',
+		'Alaska':'AK',
+		'Arkansas': 'AR',
+		'California': 'CA',
+		'Colorado': 'CO',
+		'Connecticut': 'CT',
+		'Delaware': 'DE',
+		'Florida': 'FL',
+		'Georgia': 'GA',
+		'Hawaii': 'HI',
+		'Idaho': 'ID',
+		'Illinois': 'IL',
+		'Indiana': 'IN',
+		'Iowa': 'IA',
+		'Kansas': 'KS',
+		'Kentucky': 'KY',
+		'Louisiana': 'LA',
+		'Maine': 'ME',
+		'Maryland': 'MD',
+		'Massachusetts': 'MA',
+		'Michigan': 'MI',
+		'Minnesota': 'MN',
+		'Mississippi': 'MS',
+		'Missouri': 'MO',
+		'Montana': 'MT',
+		'Nebraska': 'NE',
+		'Nevada': 'NV',
+		'New Hampshire': 'NH',
+		'New Jersey': 'NJ',
+		'New Mexico': 'NM',
+		'New York': 'NY',
+		'North Carolina': 'NC',
+		'North Dakota': 'ND',
+		'Ohio': 'OH',
+		'Oklahoma': 'OK',
+		'Oregon': 'OR',
+		'Pennsylvania': 'PA',
+		'Rhode Island': 'RI',
+		'South Carolina': 'SC',
+		'South Dakota': 'SD',
+		'Tennessee': 'TN',
+		'Texas': 'TX',
+		'Utah': 'UT',
+		'Vermont': 'VT',
+		'Virginia': 'VA',
+		'Washington': 'WA',
+		'West Virginia': 'WV',
+		'Wisconsin': 'WI',
+		'Wyoming': 'WY'}[state_name];
+};
+
+const get_incident_id = (contents, state_name, city) => {
+	if (contents.indexOf(city) === -1) {
+		return `${get_state_code(state_name)}-${city !== '' ? city : get_state_code(state_name)}-0`.toLowerCase();
+	} else {
+		const lines = contents.split('\n');
+
+		let id = 0;
+		let inCity = city !== '';
+
+		lines.forEach(l => {
+			if (l.indexOf(`## ${city}`) !== -1) {
+				inCity = true;
+			} else if (inCity && l.indexOf('###') !== -1) {
+				id += 1;
+			} else if (l.indexOf('## ') !== -1) {
+				inCity = false;
+			}
+		});
+
+		return `${get_state_code(state_name)}-${city !== '' ? city : get_state_code(state_name)}-${id}`.toLowerCase();
+	}
+}
+
 // Handle submission. Requires state, city, title, description, links, and date
 app.post('/submit', recaptcha.middleware.verify, async (req, res) => {
 	if (!req.recaptcha.error) {
@@ -66,17 +145,17 @@ app.post('/submit', recaptcha.middleware.verify, async (req, res) => {
 
 			if (contents.indexOf(city) !== -1) {
 				const index = contents.indexOf('\r\n', contents.indexOf(city)) + 2;
-				addition = `\r\n### ${title} | ${date}\r\n\r\n${description}\r\n\r\n**Links**\r\n${link_contents}\r\n`;
+				addition = `\r\n### ${title} | ${date}\r\n\r\n${description}\r\n\r\nid: ${get_incident_id(contents, state, city)}\r\n\r\n**Links**\r\n${link_contents}\r\n`;
 
 				contents = contents.substr(0, index)
 					+ addition
 					+ contents.substr(index);
 			} else {
-				addition = `\r\n\r\n## ${city}\r\n\r\n### ${title} | ${date}\r\n\r\n${description}\r\n\r\n**Links**\r\n${link_contents}\r\n\r\n`;
+				addition = `\r\n\r\n## ${city}\r\n\r\n### ${title} | ${date}\r\n\r\n${description}\r\n\r\nid: ${get_incident_id(contents, state, city)}\r\n\r\n**Links**\r\n${link_contents}\r\n\r\n`;
 				contents += addition;
 			}
 		} else {
-			addition = `#${state}\r\n\r\n\r\n## ${city}\r\n\r\n### ${title} | ${date}\r\n\r\n${description}\r\n\r\n**Links**\r\n${link_contents}\r\n\r\n`;
+			addition = `#${state}\r\n\r\n\r\n## ${city}\r\n\r\n### ${title} | ${date}\r\n\r\n${description}\r\n\r\nid: ${get_incident_id('', state, city)}\r\n\r\n**Links**\r\n${link_contents}\r\n\r\n`;
 			contents = addition;
 		}
 
