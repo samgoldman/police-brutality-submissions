@@ -83,7 +83,7 @@ app.post('/submit', async (req, res) => {
 	await git_repo.commit(`Update ${state}.md via web form`, );
 	await git_repo.push(['--set-upstream', 'origin', `patch-${branch_id}`]);
 
-	res.status(200).send(branch_id);
+	res.redirect('/success.html');
 });
 
-app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`));
+app.listen(port, () => console.log(`Listening at http://localhost:${port}`));
