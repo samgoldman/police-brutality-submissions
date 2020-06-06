@@ -8,9 +8,6 @@ const git = require('simple-git/promise');
 const rimraf = require('rimraf');
 const { Octokit } = require('@octokit/rest');
 
-if (fs.existsSync('police-brutality'))
-	rimraf.sync("police-brutality");
-
 const USER = process.env.GITHUB_USER;
 const PASS = process.env.GITHUB_PASSWORD;
 const REPO = `github.com/${USER}/police-brutality.git`;
@@ -21,18 +18,6 @@ const octokit = new Octokit({
 });
 
 const remote = `https://${USER}:${PASS}@${REPO}`;
-let git_repo = null;
-
-// Initialize the local repository
-git().silent(true)
-	.clone(remote)
-	.then(async () => {
-		await git('./police-brutality').addRemote('upstream', 'https://github.com/2020PB/police-brutality.git');
-		git_repo = await git('./police-brutality');
-		await git_repo.addConfig('user.name', 'Samuel Goldman');
-		await git_repo.addConfig('user.email', 'sgoldman216@gmail.com');
-	})
-	.catch((err) => console.error('Failed clone: ', err));
 
 app.use(express.static('public'))
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -47,6 +32,17 @@ app.post('/submit', async (req, res) => {
 	const links = req.body['links'].split('\n');
 	const date = req.body['date'];
 
+	fs.mkdirSync(`patch-${branch_id}`);
+
+	// Initialize the local repository
+	await git(`patch-${branch_id}`).silent(true).clone(remote);
+
+	await git(`./patch-${branch_id}/police-brutality`).addRemote('upstream', 'https://github.com/2020PB/police-brutality.git');
+
+	const git_repo = await git(`./patch-${branch_id}/police-brutality`);
+	await git_repo.addConfig('user.name', 'Samuel Goldman');
+	await git_repo.addConfig('user.email', 'sgoldman216@gmail.com');
+
 	let link_contents = '';
 
 	links.forEach(link => {
@@ -56,8 +52,9 @@ app.post('/submit', async (req, res) => {
 	await git_repo.fetch('upstream', 'master');
 	await git_repo.checkoutBranch(`patch-${branch_id}`, 'FETCH_HEAD');
 
-	const filename = `./police-brutality/reports/${state}.md`;
+	const filename = `./patch-${branch_id}/police-brutality/reports/${state}.md`;
 	let contents;
+	let addition;
 
 	// Update the file
 	if (fs.existsSync(filename)) {
@@ -65,15 +62,18 @@ app.post('/submit', async (req, res) => {
 
 		if (contents.indexOf(city) !== -1) {
 			const index = contents.indexOf('\r\n', contents.indexOf(city)) + 2;
+			addition = `\r\n### ${title} | ${date}\r\n\r\n${description}\r\n\r\n**Links**\r\n${link_contents}`;
 
 			contents = contents.substr(0, index)
-				+ `\r\n### ${title} | ${date}\r\n\r\n${description}\r\n\r\n**Links**\r\n${link_contents}`
+				+ addition
 				+ contents.substr(index);
 		} else {
-			contents += `\r\n\r\n## ${city}\r\n\r\n### ${title} | ${date}\r\n\r\n${description}\r\n\r\n**Links**\r\n${link_contents}\r\n\r\n`;
+			addition = `\r\n\r\n## ${city}\r\n\r\n### ${title} | ${date}\r\n\r\n${description}\r\n\r\n**Links**\r\n${link_contents}\r\n\r\n`;
+			contents += addition;
 		}
 	} else {
-		contents = `#${state}\r\n\r\n\r\n## ${city}\r\n\r\n### ${title} | ${date}\r\n\r\n${description}\r\n\r\n**Links**\r\n${link_contents}\r\n\r\n`;
+		addition = `#${state}\r\n\r\n\r\n## ${city}\r\n\r\n### ${title} | ${date}\r\n\r\n${description}\r\n\r\n**Links**\r\n${link_contents}\r\n\r\n`;
+		contents = addition;
 	}
 
 	fs.writeFileSync(filename, contents);
@@ -82,6 +82,8 @@ app.post('/submit', async (req, res) => {
 	await git_repo.add(`reports/${state}.md`);
 	await git_repo.commit(`Update ${state}.md via web form`, );
 	await git_repo.push(['--set-upstream', 'origin', `patch-${branch_id}`]);
+
+	rimraf.sync(`./patch-${branch_id}`);
 
 	res.redirect('/success.html');
 });
