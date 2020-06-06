@@ -14,9 +14,7 @@
     "express": "^4.17.1",
     "randomstring": "^1.1.5",
     "rimraf": "^3.0.2",
-    "simple-git": "^2.5.0"
-  },
-  "devDependencies": {
+    "simple-git": "^2.5.0",
     "@octokit/rest": "^17.10.0"
   }
 }
