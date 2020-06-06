@@ -28,7 +28,9 @@ git().silent(true)
 	.clone(remote)
 	.then(() => {
 		git('./police-brutality').addRemote('upstream', 'https://github.com/2020PB/police-brutality.git');
-		git_repo = git('./police-brutality');
+		git_repo = git('./police-brutality')
+			.addConfig('user.name', 'Samuel Goldman')
+			.addConfig('user.email', 'sgoldman216@gmail.com');
 	})
 	.catch((err) => console.error('Failed clone: ', err));
 
