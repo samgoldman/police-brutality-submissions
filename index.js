@@ -25,83 +25,68 @@ const remote = `https://${USER}:${PASS}@${REPO}`;
 app.use(express.static('public'))
 app.use(bodyParser.urlencoded({ extended: false }));
 
+const STATE_NAME_TO_CODE = {
+	'Arizona': 'AZ',
+	'Alabama': 'AL',
+	'Alaska':'AK',
+	'Arkansas': 'AR',
+	'California': 'CA',
+	'Colorado': 'CO',
+	'Connecticut': 'CT',
+	'Delaware': 'DE',
+	'Florida': 'FL',
+	'Georgia': 'GA',
+	'Hawaii': 'HI',
+	'Idaho': 'ID',
+	'Illinois': 'IL',
+	'Indiana': 'IN',
+	'Iowa': 'IA',
+	'Kansas': 'KS',
+	'Kentucky': 'KY',
+	'Louisiana': 'LA',
+	'Maine': 'ME',
+	'Maryland': 'MD',
+	'Massachusetts': 'MA',
+	'Michigan': 'MI',
+	'Minnesota': 'MN',
+	'Mississippi': 'MS',
+	'Missouri': 'MO',
+	'Montana': 'MT',
+	'Nebraska': 'NE',
+	'Nevada': 'NV',
+	'New Hampshire': 'NH',
+	'New Jersey': 'NJ',
+	'New Mexico': 'NM',
+	'New York': 'NY',
+	'North Carolina': 'NC',
+	'North Dakota': 'ND',
+	'Ohio': 'OH',
+	'Oklahoma': 'OK',
+	'Oregon': 'OR',
+	'Pennsylvania': 'PA',
+	'Rhode Island': 'RI',
+	'South Carolina': 'SC',
+	'South Dakota': 'SD',
+	'Tennessee': 'TN',
+	'Texas': 'TX',
+	'Utah': 'UT',
+	'Vermont': 'VT',
+	'Virginia': 'VA',
+	'Washington': 'WA',
+	'West Virginia': 'WV',
+	'Wisconsin': 'WI',
+	'Wyoming': 'WY',
+	'Washington DC': 'DC',
+	'Unknown Location': 'TBD'};
+
 const get_state_code = state_name => {
 	if (state_name === 'Washington DC') return 'dc';
 	else if (state_name === 'Unknown Location') return 'tbd';
-	else return {
-		'Arizona': 'AZ',
-		'Alabama': 'AL',
-		'Alaska':'AK',
-		'Arkansas': 'AR',
-		'California': 'CA',
-		'Colorado': 'CO',
-		'Connecticut': 'CT',
-		'Delaware': 'DE',
-		'Florida': 'FL',
-		'Georgia': 'GA',
-		'Hawaii': 'HI',
-		'Idaho': 'ID',
-		'Illinois': 'IL',
-		'Indiana': 'IN',
-		'Iowa': 'IA',
-		'Kansas': 'KS',
-		'Kentucky': 'KY',
-		'Louisiana': 'LA',
-		'Maine': 'ME',
-		'Maryland': 'MD',
-		'Massachusetts': 'MA',
-		'Michigan': 'MI',
-		'Minnesota': 'MN',
-		'Mississippi': 'MS',
-		'Missouri': 'MO',
-		'Montana': 'MT',
-		'Nebraska': 'NE',
-		'Nevada': 'NV',
-		'New Hampshire': 'NH',
-		'New Jersey': 'NJ',
-		'New Mexico': 'NM',
-		'New York': 'NY',
-		'North Carolina': 'NC',
-		'North Dakota': 'ND',
-		'Ohio': 'OH',
-		'Oklahoma': 'OK',
-		'Oregon': 'OR',
-		'Pennsylvania': 'PA',
-		'Rhode Island': 'RI',
-		'South Carolina': 'SC',
-		'South Dakota': 'SD',
-		'Tennessee': 'TN',
-		'Texas': 'TX',
-		'Utah': 'UT',
-		'Vermont': 'VT',
-		'Virginia': 'VA',
-		'Washington': 'WA',
-		'West Virginia': 'WV',
-		'Wisconsin': 'WI',
-		'Wyoming': 'WY'}[state_name];
+	else return STATE_NAME_TO_CODE[state_name];
 };
 
-const get_incident_id = (contents, state_name, city) => {
-	if (contents.indexOf(city) === -1) {
-		return `${get_state_code(state_name)}-${city !== '' ? city : get_state_code(state_name)}-0`.toLowerCase();
-	} else {
-		const lines = contents.split('\n');
-
-		let id = 0;
-		let inCity = city !== '';
-
-		lines.forEach(l => {
-			if (l.indexOf(`## ${city}`) !== -1) {
-				inCity = true;
-			} else if (inCity && l.indexOf('###') !== -1) {
-				id += 1;
-			} else if (l.indexOf('## ') !== -1) {
-				inCity = false;
-			}
-		});
-
-		return `${get_state_code(state_name)}-${city !== '' ? city : get_state_code(state_name)}-${id}`.toLowerCase();
-	}
+const get_incident_id = (index, state_code, city) => {
+	return `${state_code}-${city !== '' ? city : state_code}-${index}`.toLowerCase();
 }
 
 // Handle submission. Requires state, city, title, description, links, and date
@@ -141,19 +126,51 @@ app.post('/submit', recaptcha.middleware.verify, async (req, res) => {
 
 		// Update the file
 		if (fs.existsSync(filename)) {
-			contents = fs.readFileSync(filename, 'utf-8');
+			let lines = fs.readFileSync(filename, 'utf-8').split('\n');
 
-			if (contents.indexOf(city) !== -1) {
-				const index = contents.indexOf('\r\n', contents.indexOf(city)) + 2;
-				addition = `\r\n### ${title} | ${date}\r\n\r\n${description}\r\n\r\nid: ${get_incident_id(contents, state, city)}\r\n\r\n**Links**\r\n${link_contents}\r\n`;
+			let inTargetCity = state === 'Washington DC' || state === 'Unknown Location';
+			let numIncidents = 0;
 
-				contents = contents.substr(0, index)
-					+ addition
-					+ contents.substr(index);
-			} else {
-				addition = `\r\n\r\n## ${city}\r\n\r\n### ${title} | ${date}\r\n\r\n${description}\r\n\r\nid: ${get_incident_id(contents, state, city)}\r\n\r\n**Links**\r\n${link_contents}\r\n\r\n`;
-				contents += addition;
+			let i;
+			for (i = 0; i < lines.length; i++) {
+				const line = lines[i];
+
+				if (line.startsWith('## ')) { // This is a city
+					if (inTargetCity) break; // This is the end of the entries for the target city
+					else if (line.substr(3).startsWith(city)) inTargetCity = true;
+				} else if (line.startsWith('### '))  { // This is an incident
+					numIncidents ++;
+				}
 			}
+
+			// Add new lines, working backwards
+			lines.splice(i, 0, '\r');
+			lines.splice(i, 0, '\r');
+
+			links.forEach(link => {
+				lines.splice(i, 0, `* ${link}\r`);
+			});
+
+			lines.splice(i, 0, '\r');
+
+			lines.splice(i, 0, `id: ${get_incident_id(numIncidents + 1, STATE_NAME_TO_CODE[state], city)}\r`)
+
+			lines.splice(i, 0, '\r');
+
+			lines.splice(i, 0, `${description}\r`);
+
+			lines.splice(i, 0, '\r');
+
+			lines.splice(i, 0, `### ${title} | ${date}\r`)
+
+			if (!inTargetCity) {
+				lines.splice(i, 0, '\r');
+				lines.splice(i, 0, `## ${city}\r`);
+			}
+
+			lines.splice(i, 0, '\r');
+
+			contents = lines.join('\n');
 		} else {
 			addition = `#${state}\r\n\r\n\r\n## ${city}\r\n\r\n### ${title} | ${date}\r\n\r\n${description}\r\n\r\nid: ${get_incident_id('', state, city)}\r\n\r\n**Links**\r\n${link_contents}\r\n\r\n`;
 			contents = addition;
@@ -161,22 +178,23 @@ app.post('/submit', recaptcha.middleware.verify, async (req, res) => {
 
 		fs.writeFileSync(filename, contents);
 
-		// Add the changes, commit them, and push them
-		await git_repo.add(`reports/${state}.md`);
-		await git_repo.commit(`Update ${state}.md via web form`,);
-		await git_repo.push(['--set-upstream', 'origin', `patch-${branch_id}`]);
+		if (process.env.OMIT_PUBLISH !== 'true') {
+			// Add the changes, commit them, and push them
+			await git_repo.add(`reports/${state}.md`);
+			await git_repo.commit(`Update ${state}.md via web form`,);
+			await git_repo.push(['--set-upstream', 'origin', `patch-${branch_id}`]);
 
-		try {
-			rimraf.sync(`./patch-${branch_id}`);
-		} catch (error) {
-			console.log('Could not delete the git directory...');
-		}
+			try {
+				rimraf.sync(`./patch-${branch_id}`);
+			} catch (error) {
+				console.log('Could not delete the git directory...');
+			}
 
-		await octokit.issues.create({
-			owner: '2020PB',
-			repo: 'police-brutality',
-			title: `Incident in ${city},${state}`,
-			body: `This issue is autogenerated based on a submission to police-brutality-submissions.heroku.com.
+			await octokit.issues.create({
+				owner: '2020PB',
+				repo: 'police-brutality',
+				title: `Incident in ${city},${state}`,
+				body: `This issue is autogenerated based on a submission to police-brutality-submissions.heroku.com.
 Proposed changes are on: https://github.com/${USER}/police-brutality/tree/patch-${branch_id}
 View the proposed diff here: https://github.com/2020PB/police-brutality/compare/master...${USER}:patch-${branch_id}
 Proposed additions to \`${state}.md\` are as follows:
@@ -184,7 +202,8 @@ Proposed additions to \`${state}.md\` are as follows:
 ${addition}
 \`\`\`
 	`
-		})
+			});
+		}
 
 		res.redirect('/success.html');
 	} else {
