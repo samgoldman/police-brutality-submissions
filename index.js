@@ -143,33 +143,54 @@ app.post('/submit', recaptcha.middleware.verify, async (req, res) => {
 				}
 			}
 
+			let new_lines = [];
+
 			// Add new lines, working backwards
 			lines.splice(i, 0, '\r');
+			new_lines.splice(0, 0, '\r');
 			lines.splice(i, 0, '\r');
+			new_lines.splice(0, 0, '\r');
 
 			links.forEach(link => {
 				lines.splice(i, 0, `* ${link}\r`);
+				new_lines.splice(0, 0, `* ${link}\r`);
 			});
 
 			lines.splice(i, 0, '\r');
+			new_lines.splice(0, 0, '\r');
 
-			lines.splice(i, 0, `id: ${get_incident_id(numIncidents + 1, STATE_NAME_TO_CODE[state], city)}\r`)
+			lines.splice(i, 0, '**Links**\r');
+			new_lines.splice(0, 0, '**Links**\r');
 
 			lines.splice(i, 0, '\r');
+			new_lines.splice(0, 0, '\r');
+
+			lines.splice(i, 0, `id: ${get_incident_id(numIncidents + 1, get_state_code(state), city)}\r`);
+			new_lines.splice(0, 0, `id: ${get_incident_id(numIncidents + 1,  get_state_code(state), city)}\r`);
+
+			lines.splice(i, 0, '\r');
+			new_lines.splice(0, 0, '\r');
 
 			lines.splice(i, 0, `${description}\r`);
+			new_lines.splice(0, 0, `${description}\r`);
 
 			lines.splice(i, 0, '\r');
+			new_lines.splice(0, 0, '\r');
 
 			lines.splice(i, 0, `### ${title} | ${date}\r`)
+			new_lines.splice(0, 0, `### ${title} | ${date}\r`);
 
 			if (!inTargetCity) {
 				lines.splice(i, 0, '\r');
+				new_lines.splice(0, 0, '\r');
 				lines.splice(i, 0, `## ${city}\r`);
+				new_lines.splice(0, 0, `## ${city}\r`);
 			}
 
 			lines.splice(i, 0, '\r');
+			new_lines.splice(0, 0, '\r');
 
+			addition = new_lines.join('\n');
 			contents = lines.join('\n');
 		} else {
 			addition = `#${state}\r\n\r\n\r\n## ${city}\r\n\r\n### ${title} | ${date}\r\n\r\n${description}\r\n\r\nid: ${get_incident_id('', state, city)}\r\n\r\n**Links**\r\n${link_contents}\r\n\r\n`;
