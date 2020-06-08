@@ -165,12 +165,6 @@ app.post('/submit', recaptcha.middleware.verify, async (req, res) => {
 			lines.splice(i, 0, '\r');
 			new_lines.splice(0, 0, '\r');
 
-			lines.splice(i, 0, `id: ${get_incident_id(numIncidents + 1, get_state_code(state), city)}\r`);
-			new_lines.splice(0, 0, `id: ${get_incident_id(numIncidents + 1,  get_state_code(state), city)}\r`);
-
-			lines.splice(i, 0, '\r');
-			new_lines.splice(0, 0, '\r');
-
 			lines.splice(i, 0, `${description}\r`);
 			new_lines.splice(0, 0, `${description}\r`);
 
@@ -193,7 +187,7 @@ app.post('/submit', recaptcha.middleware.verify, async (req, res) => {
 			addition = new_lines.join('\n');
 			contents = lines.join('\n');
 		} else {
-			addition = `#${state}\r\n\r\n\r\n## ${city}\r\n\r\n### ${title} | ${date}\r\n\r\n${description}\r\n\r\nid: ${get_incident_id('', state, city)}\r\n\r\n**Links**\r\n${link_contents}\r\n\r\n`;
+			addition = `#${state}\r\n\r\n\r\n## ${city}\r\n\r\n### ${title} | ${date}\r\n\r\n${description}\r\n\r\n**Links**\r\n${link_contents}\r\n\r\n`;
 			contents = addition;
 		}
 
