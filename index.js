@@ -204,7 +204,7 @@ app.post('/submit', recaptcha.middleware.verify, async (req, res) => {
 			console.log('Could not delete the git directory...');
 		}
 
-		await octokit.issues.create({
+		const issue = await octokit.issues.create({
 			owner: process.env.DEBUG === 'true' ? '2020PB-bot' : '2020PB',
 			repo: 'police-brutality',
 			title: `Incident in ${city},${state}`,
@@ -215,10 +215,9 @@ Proposed additions to \`${state}.md\` are as follows:
 \`\`\`
 ${addition}
 \`\`\`
-`
-		});
+`});
 
-		res.redirect('/success.html');
+		res.redirect(`/success.html#${issue.data.number}`);
 	} else {
 		res.status(400);
 		res.send('400: You failed recaptcha validation');
